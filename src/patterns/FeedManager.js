@@ -1,92 +1,66 @@
-// Importa la fábrica de publicaciones (PostFactory), 
-// responsable de crear instancias específicas de posts (imagen, video, galería, etc.)
+// Importa la fábrica de publicaciones para crear los diferentes tipos de posts
 import { PostFactory } from './PostFactory.js';
 
 /**
- * 🧩 Clase FeedManager
- * 
- * Patrón de diseño: **Singleton**
- * 
- * Esta clase gestiona el estado global del *feed principal* de publicaciones.
- * Se asegura de que solo exista una instancia en toda la aplicación, encargada de:
- * 
- * - Almacenar todos los módulos de publicaciones.
- * - Crear nuevas publicaciones mediante `PostFactory`.
- * - Renderizar dinámicamente el contenido del feed en el DOM.
- * 
- * Su objetivo es mantener el control centralizado del flujo del contenido del usuario.
+ * FeedManager (Singleton): Se encarga de gestionar el estado y el renderizado del feed principal.
+ * Utiliza el patrón Singleton para asegurar que solo exista una instancia de esta clase.
  */
 class FeedManager {
-    // --- Propiedades privadas (encapsuladas con #) ---
-    static #instance;      // Instancia única del Singleton
-    #feedData = [];        // Arreglo que contiene los módulos de publicaciones actuales
+    // Propiedad privada estática que almacenará la instancia única del Singleton
+    static #instance;
+    // Arreglo privado donde se almacenan los datos (posts) del feed
+    #feedData = []; 
 
-    /**
-     * Constructor privado.
-     * Si ya existe una instancia previa, retorna esa misma referencia.
-     * Esto asegura la existencia de un único FeedManager activo.
-     */
+    // Constructor de la clase
     constructor() {
+        // Si ya existe una instancia de FeedManager, devuelve esa misma
         if (FeedManager.#instance) {
             return FeedManager.#instance;
         }
+        // Si no existe, guarda esta como la instancia única
         FeedManager.#instance = this;
     }
 
-    /**
-     * Obtiene la instancia única del FeedManager.
-     * Si no existe, la crea por primera vez.
-     * 
-     * @returns {FeedManager} Instancia única del administrador del feed.
-     */
+    // Método estático que retorna la instancia única de FeedManager
     static getInstance() {
+        // Si aún no se ha creado, la instancia se crea aquí
         if (!this.#instance) {
             this.#instance = new FeedManager();
         }
+        // Retorna siempre la misma instancia
         return this.#instance;
     }
 
-    /**
-     * Agrega una nueva publicación al feed.
-     * Utiliza la fábrica `PostFactory` para crear el tipo correcto de módulo.
-     * 
-     * @param {string} type - Tipo de publicación (por ejemplo: "image", "video", "gallery").
-     * @param {Object} data - Datos específicos del post (autor, url, caption, etc.).
-     */
+    // Método para agregar una nueva publicación al feed
     addPost(type, data) {
-        const postModule = PostFactory.createPost(type, data); // Crea el módulo adecuado
-        this.#feedData.push(postModule);                       // Lo agrega al arreglo global
-        this.render();                                         // Actualiza visualmente el feed
+        // Crea una instancia del post según su tipo usando la fábrica
+        const postModule = PostFactory.createPost(type, data); 
+        // Agrega el nuevo post al arreglo del feed
+        this.#feedData.push(postModule);
+        // Llama al método para renderizar el feed actualizado
+        this.render();
     }
 
-    /**
-     * Renderiza todos los posts en el contenedor principal del feed.
-     * Si el contenedor no existe en el DOM, lanza un error controlado.
-     * 
-     * Este método es llamado automáticamente cada vez que se agrega una nueva publicación.
-     */
+    // Método encargado de renderizar el contenido del feed en el DOM
     render() {
-        // Se obtiene dinámicamente el contenedor principal del feed
+        // Busca el contenedor del feed en el documento
         const container = document.getElementById('feed-container'); 
-
-        // Validación: Si el contenedor no existe, se detiene el renderizado
+        // Verifica si el contenedor existe antes de intentar renderizar
         if (!container) {
             console.error("El contenedor 'feed-container' NO fue encontrado en el DOM durante el renderizado.");
             return;
         }
 
-        // Limpia el contenido previo del feed
+        // Limpia el contenido anterior del contenedor
         container.innerHTML = '';
-
-        // Recorre todas las publicaciones almacenadas y las renderiza en orden
+        // Recorre cada post almacenado y lo renderiza dentro del contenedor
         this.#feedData.forEach(postModule => {
-            postModule.render(container);
+            postModule.render(container); 
         });
-
-        // Mensaje de depuración informativo
+        // Muestra en consola la cantidad de posts renderizados
         console.log(`[Singleton] Renderizado completado con ${this.#feedData.length} posts.`);
     }
 }
 
-// Exporta una única instancia del FeedManager (patrón Singleton)
+// Crea y exporta una única instancia de FeedManager (Singleton)
 export const feedManager = FeedManager.getInstance();

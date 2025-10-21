@@ -1,59 +1,57 @@
-// Importa los módulos principales:
-// - feedManager: gestiona el renderizado y estado del feed (patrón Singleton)
-// - HeaderUI: maneja las notificaciones y contadores de actividad (patrón Observer)
 import { feedManager } from './patterns/FeedManager.js';
 import { HeaderUI } from './ui/HeaderUI.js';
 
-// Nombre de usuario activo (simulado)
-const USER_NAME = "TuNuevoUsuario";
-// Contador incremental para asignar IDs únicos a los nuevos posts
-let postIdCounter = 200; 
-
-// -----------------------------------------------------------------------------
-// --- FUNCIÓN DE NOTIFICACIÓN FLOTANTE (TOAST) ---
-// -----------------------------------------------------------------------------
-
 /**
- * Crea o actualiza una notificación flotante (toast) en pantalla.
- * Se utiliza para avisar al usuario sobre likes, comentarios o nuevas publicaciones.
+ * Archivo principal de la aplicación.
+ * Contiene la inicialización del feed, la lógica de subida de publicaciones
+ * y la configuración del header con notificaciones (likes y comentarios).
+ */
+
+// --- Constantes Globales ---
+const USER_NAME = "TuNuevoUsuario"; // Nombre del usuario actual
+let postIdCounter = 200; // Contador incremental para asignar IDs únicos a nuevos posts
+
+
+// --- Función de Notificación Flotante (Toast) ---
+/**
+ * Muestra un pequeño mensaje flotante en pantalla (notificación temporal).
+ * Si el contenedor no existe, se crea dinámicamente en el DOM.
  */
 window.showToastNotification = function(message) {
     let toast = document.getElementById('toast-notification');
     
-    // Si no existe el contenedor, se crea dinámicamente
+    // Crear el contenedor si no existe
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'toast-notification';
         document.body.appendChild(toast);
     }
     
-    // Inserta el mensaje y aplica las animaciones CSS
+    // Mostrar el mensaje con animación
     toast.innerHTML = `<p>${message}</p>`;
     toast.classList.remove('hidden', 'slide-out'); 
     toast.classList.add('slide-in'); 
 
-    // Después de 3 segundos, desaparece automáticamente
+    // Ocultar después de 3 segundos
     setTimeout(() => {
         toast.classList.remove('slide-in');
         toast.classList.add('slide-out'); 
     }, 3000);
-}
+};
 
-// -----------------------------------------------------------------------------
-// --- LÓGICA DE SUBIDA DE PUBLICACIONES ---
-// -----------------------------------------------------------------------------
+
+// --- Lógica de Subida de Publicaciones ---
 
 /**
  * Abre el modal de subida de publicaciones.
- * Se ejecuta al hacer clic en el icono de cámara 📸.
  */
 function handleCameraClick() {
     document.getElementById('upload-modal-container').classList.remove('hidden');
 }
 
 /**
- * Procesa el formulario de subida de publicaciones.
- * Valida los datos ingresados, genera el objeto del post y lo envía al feed.
+ * Maneja la subida de una nueva publicación, construye el objeto de datos
+ * y lo envía al FeedManager. Soporta imágenes, videos y galerías.
  */
 function handleUploadPost() {
     const typeSelect = document.getElementById('upload-type').value;
@@ -61,7 +59,7 @@ function handleUploadPost() {
     const urlInput = document.getElementById('upload-url').value;
     const urlsInput = document.getElementById('upload-urls').value;
 
-    // Datos base del nuevo post
+    // Crear estructura básica del post
     let postData = {
         id: postIdCounter++,
         author: USER_NAME,
@@ -70,8 +68,9 @@ function handleUploadPost() {
         comments: []
     };
 
-    // Si el usuario selecciona una galería (varias imágenes)
+    // Diferenciar entre tipos de post
     if (typeSelect === 'gallery') {
+        // Validar y procesar URLs de galería
         const urlsArray = urlsInput.split(',').map(url => url.trim()).filter(url => url !== "");
         if (urlsArray.length < 2) {
             alert("Para una Galería, ingresa al menos dos URLs separadas por coma.");
@@ -79,9 +78,8 @@ function handleUploadPost() {
         }
         postData.type = 'gallery';
         postData.urls = urlsArray;
-
     } else {
-        // Si es imagen o video, se requiere una URL válida
+        // Validar URL de imagen o video
         if (!urlInput) {
             alert(`Ingresa una URL de imagen o video válida para el tipo ${typeSelect}.`);
             return;
@@ -90,18 +88,16 @@ function handleUploadPost() {
         postData.url = urlInput;
     }
 
-    // Agrega el nuevo post al feed
+    // Agregar el post al feed mediante el gestor
     feedManager.addPost(postData.type, postData);
     
-    // Limpia el formulario y cierra el modal
+    // Limpiar formulario y cerrar el modal
     document.getElementById('upload-modal-container').classList.add('hidden');
     document.getElementById('upload-form').reset();
 }
 
 /**
- * Muestra u oculta los campos de URL según el tipo de publicación seleccionado.
- * - Imagen o video: muestra un solo campo de URL.
- * - Galería: muestra el área de texto para múltiples URLs.
+ * Alterna entre los campos de URL según el tipo de post seleccionado.
  */
 function handleTypeChange(event) {
     const type = event.target.value;
@@ -117,14 +113,8 @@ function handleTypeChange(event) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// --- DATOS DE SIMULACIÓN PARA EL FEED INICIAL ---
-// -----------------------------------------------------------------------------
 
-/**
- * Datos iniciales del feed simulando publicaciones existentes.
- * Incluyen posts de tipo imagen, video y galería (carrusel).
- */
+// --- Datos de Simulación para el Feed ---
 const mockFeedData = [
     { id: 101, type: 'image', author: 'Ana López', caption: 'Viaje a la montaña. ¡Qué vistas!', likes: 5, comments: [{ user: 'Alex', text: '¡Genial foto!', timestamp: '10:00' }], url: 'https://picsum.photos/600/600?random=1' },
     { id: 102, type: 'video', author: 'Carlos Ruiz', caption: 'Probando el nuevo código JS.', likes: 12, comments: [{ user: 'DevGuy', text: 'Impresionante trabajo.', timestamp: '11:00' }], url: 'https://www.w3schools.com/html/mov_bbb.mp4' },
@@ -132,22 +122,13 @@ const mockFeedData = [
     { id: 104, type: 'image', author: 'María Elena', caption: 'Receta del día: Pasta con pesto.', likes: 20, comments: [], url: 'https://picsum.photos/600/600?random=2' },
 ];
 
-// 
-// --- INICIALIZACIÓN DE LA APLICACIÓN ---
-// 
 
-/**
- * Inicializa la aplicación:
- * - Inyecta el HTML base (header, feed, modal).
- * - Configura los eventos del header.
- * - Inicializa el observador de notificaciones.
- * - Renderiza las publicaciones de prueba.
- */
+// --- Inicialización Principal de la App ---
 function initializeApp() {
     const appContainer = document.querySelector('#app');
     if (!appContainer) return;
 
-    // --- 1. Inyección del HTML principal ---
+    // 1️⃣ Inyectar la estructura HTML del encabezado, feed y modal de subida
     appContainer.innerHTML = `
         <header id="main-header">
             <div class="header-content">
@@ -176,8 +157,6 @@ function initializeApp() {
             </div>
         </header>
         <div id="feed-container"></div>
-        
-        <!-- Modal para subir nuevas publicaciones -->
         <div id="upload-modal-container" class="modal-container hidden">
             <div class="modal-content">
                 <h3>Subir Nueva Publicación (Simulación)</h3>
@@ -208,28 +187,27 @@ function initializeApp() {
             </div>
         </div>
     `;
+
+    // 2️⃣ Configurar interacciones del encabezado
+    HeaderUI.init(); // Inicializa el observador del header
     
-    // --- 2. Configurar interacciones del header ---
-    HeaderUI.init(); // Inicializa el observador de notificaciones
-    
-    // Selecciona los elementos interactivos
     const logo = appContainer.querySelector('.insta-logo');
     const heartIcon = appContainer.querySelector('.icon-heart');
     const dmIcon = appContainer.querySelector('.icon-dm');
     const cameraButton = appContainer.querySelector('#camera-button');
 
-    // Permite hacer scroll al inicio al hacer clic en el logo
+    // Scroll al inicio al hacer clic en el logo
     if (logo) {
         logo.style.cursor = 'pointer';
         logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     }
-    
-    // Abre el modal de subida
+
+    // Abrir modal de subida
     if (cameraButton) {
         cameraButton.addEventListener('click', handleCameraClick);
     }
-    
-    // Control de los dropdowns de notificaciones
+
+    // Función para alternar visibilidad de los dropdowns
     const toggleDropdown = (dropdownId, otherDropdownId) => {
         const dropdown = appContainer.querySelector(dropdownId);
         const otherDropdown = appContainer.querySelector(otherDropdownId);
@@ -237,7 +215,7 @@ function initializeApp() {
         if (otherDropdown) otherDropdown.classList.add('hidden');
     };
 
-    // Muestra actividad de likes o comentarios
+    // Eventos para abrir y cerrar los menús de notificación
     heartIcon.addEventListener('click', (e) => {
         e.stopPropagation(); 
         toggleDropdown('#likes-dropdown', '#comments-dropdown');
@@ -246,23 +224,21 @@ function initializeApp() {
         e.stopPropagation();
         toggleDropdown('#comments-dropdown', '#likes-dropdown');
     });
-
-    // Cierra los dropdowns al hacer clic fuera
     document.addEventListener('click', () => {
         appContainer.querySelector('#likes-dropdown')?.classList.add('hidden');
         appContainer.querySelector('#comments-dropdown')?.classList.add('hidden');
     });
 
-    // Expone las funciones del modal al ámbito global (para ser llamadas desde HTML)
+    // Hacer funciones globales para uso desde HTML inyectado
     window.handleTypeChange = handleTypeChange;
     window.handleUploadPost = handleUploadPost;
 
-    // --- 3. Cargar publicaciones simuladas ---
+    // 3️⃣ Poblar el feed inicial con datos simulados
     console.log("Iniciando carga del Feed...");
     mockFeedData.forEach(data => {
         feedManager.addPost(data.type, data);
     });
 }
 
-// Ejecuta la inicialización principal
+// Inicializar la aplicación
 initializeApp();

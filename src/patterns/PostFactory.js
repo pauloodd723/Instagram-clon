@@ -1,36 +1,24 @@
-// Importa los diferentes tipos de módulos de publicación disponibles.
+// Importa el módulo para manejar publicaciones con imágenes
 import { ImagePostModule } from '../modules/ImagePostModule.js';
+// Importa el módulo para manejar publicaciones con videos
 import { VideoPostModule } from '../modules/VideoPostModule.js';
-import { GalleryPostModule } from '../modules/GalleryPostModule.js'; // NUEVO tipo de post (galería)
+// Importa el módulo para manejar publicaciones tipo galería (carrusel)
+import { GalleryPostModule } from '../modules/GalleryPostModule.js'; // NUEVO
 
-/**
- * PostFactory (Patrón Factory)
- * Se encarga de crear instancias del tipo correcto de publicación (imagen, video o galería)
- * según el parámetro 'type' recibido.
- */
+// Objeto PostFactory que actúa como una fábrica para crear diferentes tipos de publicaciones
 export const PostFactory = {
-    /**
-     * Crea y devuelve una instancia del módulo de publicación correspondiente.
-     * @param {string} type - Tipo de publicación ('image', 'video', 'gallery', etc.)
-     * @param {object} data - Datos del post (autor, url, caption, likes, etc.)
-     * @returns {BasePostModule} - Una instancia del módulo adecuado.
-     */
+    // Método que crea una publicación según el tipo especificado
     createPost(type, data) {
+        // Estructura de control para determinar qué tipo de publicación crear
         switch (type) {
-            // Si el tipo es 'image', crea un post de imagen.
-            case 'image':
-                return new ImagePostModule(data);
-
-            // Si el tipo es 'video', crea un post de video.
-            case 'video':
-                return new VideoPostModule(data);
-
-            // Si el tipo es 'gallery', crea un post tipo carrusel (múltiples imágenes o videos).
-            case 'gallery': // NUEVO tipo de publicación
-                return new GalleryPostModule(data);
-
-            // Si el tipo no coincide con ninguno, lanza un error.
+            case 'image': // Si el tipo es 'image'
+                return new ImagePostModule(data); // Crea una instancia del módulo de imagen
+            case 'video': // Si el tipo es 'video'
+                return new VideoPostModule(data); // Crea una instancia del módulo de video
+            case 'gallery': // NUEVO: Si el tipo es 'gallery'
+                return new GalleryPostModule(data); // Crea una instancia del módulo de galería
             default:
+                // Si el tipo no coincide con ninguno, lanza un error
                 throw new Error(`Tipo de post desconocido: ${type}`);
         }
     }

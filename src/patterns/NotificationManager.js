@@ -1,41 +1,32 @@
-/**
- * NotificationManager (Sujeto del patrón Observer)
- * Gestiona suscripciones y notificaciones por diferentes canales.
- * Canales soportados: 'likes', 'comments' y 'default'.
- */
+// NotificationManager (Sujeto Observer): Gestiona las suscripciones y notificaciones por canales específicos
 export const notificationManager = (() => {
-    // Objeto privado que contiene las listas de suscriptores por canal.
+    // Objeto privado que almacena las listas de suscriptores por canal
     const _subscribers = {
-        likes: [],      // Suscriptores que escuchan eventos de "likes".
-        comments: [],   // Suscriptores que escuchan eventos de "comments".
-        default: []     // Canal genérico si no se especifica uno válido.
+        likes: [],      // Lista de suscriptores para el canal de "likes"
+        comments: [],   // Lista de suscriptores para el canal de "comments"
+        default: []     // Lista de suscriptores por defecto (si el canal no existe)
     };
 
+    // Retorna un objeto con los métodos públicos del NotificationManager
     return {
-        /**
-         * Permite suscribir una función (callback) a un canal específico.
-         * @param {string} channel - Canal al que se desea suscribir.
-         * @param {Function} callback - Función a ejecutar cuando se notifique el canal.
-         */
+        // Método para suscribirse a un canal específico
         subscribe: (channel, callback) => {
-            // Si el canal no existe, se usa el canal por defecto.
+            // Obtiene la lista de suscriptores correspondiente al canal o usa la lista por defecto
             const list = _subscribers[channel] || _subscribers.default;
-            // Se agrega el callback a la lista de suscriptores.
+            // Agrega la función callback a la lista de suscriptores
             list.push(callback);
+            // Muestra un mensaje en consola confirmando la suscripción
             console.log(`[Observer] Suscripción exitosa al canal '${channel}'.`);
         },
 
-        /**
-         * Notifica a todos los suscriptores registrados en un canal.
-         * @param {string} channel - Canal a notificar (likes, comments, etc.).
-         * @param {*} data - Información que se enviará a los suscriptores.
-         */
+        // Método para notificar a todos los suscriptores de un canal
         notify: (channel, data) => {
-            // Si el canal no existe, se usa el canal por defecto.
+            // Obtiene la lista de suscriptores del canal o usa la lista por defecto
             const list = _subscribers[channel] || _subscribers.default;
+            // Muestra un mensaje en consola indicando a cuántos suscriptores se notificará
             console.log(`[Observer] Notificando ${list.length} suscriptores en [${channel}].`);
-            // Se ejecutan todos los callbacks asociados a ese canal.
+            // Ejecuta cada callback de los suscriptores, pasando los datos de la notificación
             list.forEach(callback => callback(data));
         }
     };
-})();
+})(); 

@@ -1,79 +1,68 @@
-// Importa la clase base para heredar su funcionalidad (likes, comentarios, compartir, etc.)
+// Importa la clase base que contiene la estructura y funcionalidades comunes para todos los tipos de publicaciones
 import { BasePostModule } from './BasePostModule.js';
 
-/**
- * GalleryPostModule:
- * Extiende la clase BasePostModule para manejar publicaciones que contienen
- * múltiples imágenes (una galería o carrusel).
- * 
- * Agrega controles de navegación (anterior/siguiente) y puntos indicadores.
- */
+// Clase que representa un módulo de publicación tipo galería (carrusel de imágenes)
+// Hereda de BasePostModule para mantener la estructura base de las publicaciones
 export class GalleryPostModule extends BasePostModule {
     constructor(data) {
-        // Llama al constructor de la clase padre
+        // Llama al constructor de la clase base
         super(data);
-
-        // Validación: asegúrate de que 'urls' sea un arreglo con al menos dos imágenes
+        // Verifica que las URLs proporcionadas sean un arreglo con al menos dos elementos
         if (!Array.isArray(this.data.urls) || this.data.urls.length < 2) {
-             console.error("GalleryPostModule requiere al menos dos URLs.");
-             // En caso de error, usa una imagen por defecto para evitar fallos en el carrusel
-             this.data.urls = this.data.urls || ['https://via.placeholder.com/600x600.png?text=Error'];
+            console.error("GalleryPostModule requiere al menos dos URLs.");
+            // Si no hay suficientes URLs, se asigna una imagen por defecto para evitar errores
+            this.data.urls = this.data.urls || ['https://via.placeholder.com/600x600.png?text=Error'];
         }
-
-        // Índice actual de la imagen mostrada en el carrusel
+        // Inicializa el índice actual del carrusel en 0
         this.currentIndex = 0;
     }
 
-    // Maneja el evento del botón "siguiente"
+    // Método que maneja el cambio al siguiente elemento del carrusel
     _handleNext = () => {
-        // Incrementa el índice y vuelve al inicio si se llega al final del array (carrusel circular)
+        // Incrementa el índice y vuelve al inicio si llega al final del arreglo
         this.currentIndex = (this.currentIndex + 1) % this.data.urls.length;
-        // Actualiza la interfaz visual del carrusel
+        // Actualiza la interfaz del carrusel
         this._updateMediaUI();
     }
 
-    // Maneja el evento del botón "anterior"
+    // Método que maneja el cambio al elemento anterior del carrusel
     _handlePrev = () => {
-        // Decrementa el índice y vuelve al último elemento si se pasa de 0
+        // Decrementa el índice y vuelve al final si se pasa del primer elemento
         this.currentIndex = (this.currentIndex - 1 + this.data.urls.length) % this.data.urls.length;
-        // Actualiza la interfaz visual del carrusel
+        // Actualiza la interfaz del carrusel
         this._updateMediaUI();
     }
     
-    // Actualiza dinámicamente la imagen mostrada y los puntos indicadores
+    // Método que actualiza la imagen visible y los indicadores (puntos)
     _updateMediaUI = () => {
-        // Obtiene los elementos del DOM asociados a la imagen y los puntos
+        // Obtiene los elementos del DOM asociados a este post
         const mediaContainer = document.getElementById(`media-content-${this.id}`);
         const dotsContainer = document.getElementById(`dots-container-${this.id}`);
         
-        // Actualiza la imagen actual del carrusel
+        // Actualiza la imagen mostrada
         if (mediaContainer) {
             mediaContainer.src = this.data.urls[this.currentIndex];
         }
         
-        // Actualiza el estado visual de los puntos (dot activo)
+        // Actualiza el estado visual de los puntos (indicadores)
         if (dotsContainer) {
             Array.from(dotsContainer.children).forEach((dot, index) => {
-                // Añade o quita la clase 'active' dependiendo del índice actual
                 dot.classList.toggle('active', index === this.currentIndex);
             });
         }
         
-        // Muestra el índice actual en la consola (solo para depuración)
+        // Muestra en consola el índice actual (para depuración)
         console.log(`Post ${this.id}: Carrusel movido a índice ${this.currentIndex}`);
     }
 
-    // Devuelve el HTML del contenido multimedia de la publicación (el carrusel)
+    // Método que devuelve el HTML del carrusel de imágenes
     getMediaHTML() {
-        // Crea un punto (dot) por cada imagen, marcando el primero como activo
+        // Genera los puntos indicadores según la cantidad de imágenes
         const dots = this.data.urls.map((_, index) => 
             `<span class="dot ${index === 0 ? 'active' : ''}"></span>`
         ).join('');
 
-        // Estructura principal del carrusel:
-        // - Imagen actual
-        // - Botones de navegación
-        // - Indicadores (puntos)
+        // Retorna el contenido HTML del carrusel
         return `
             <div class="carousel-container">
                 <img id="media-content-${this.id}" src="${this.data.urls[this.currentIndex]}" alt="Galería ${this.id}">
@@ -88,25 +77,24 @@ export class GalleryPostModule extends BasePostModule {
         `;
     }
     
-    // Renderiza la publicación de galería completa dentro del contenedor dado
+    // Método que renderiza el post y agrega los eventos de los botones de navegación
     render(container) {
-        // Llama al método render de la clase padre para construir la estructura base del post
+        // Llama al método de renderizado de la clase base
         super.render(container); 
         
-        // Obtiene el último elemento agregado al contenedor (el post recién renderizado)
+        // Obtiene el último elemento del contenedor (el post recién agregado)
         const postElement = container.lastElementChild;
         
-        // Busca los botones de navegación (prev y next)
+        // Obtiene los botones de navegación del carrusel
         const prevButton = postElement.querySelector(`#prev-btn-${this.id}`);
         const nextButton = postElement.querySelector(`#next-btn-${this.id}`);
         
-        // Si los botones existen, asigna los eventos de clic correspondientes
+        // Asigna los eventos a los botones si existen
         if (prevButton && nextButton) {
             prevButton.addEventListener('click', this._handlePrev);
             nextButton.addEventListener('click', this._handleNext);
         }
         
-        // Nota: Si el carrusel tiene 1 o menos imágenes, los botones no hacen nada.
-        // Esto ya está validado en el constructor, por lo que no causará errores.
+        // Nota: si el carrusel tiene 1 o menos imágenes, los botones no realizarán acciones.
     }
 }

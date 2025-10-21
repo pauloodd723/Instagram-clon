@@ -1,30 +1,18 @@
-// Importa la clase base que define la estructura común para los módulos de publicación
+// Importa la clase base que contiene la estructura y funcionalidades comunes para todos los tipos de publicaciones
 import { BasePostModule } from './BasePostModule.js';
 
-/**
- * Clase que representa un módulo de publicación de video.
- * Hereda la estructura general desde `BasePostModule`, pero sobrescribe el método para mostrar un video.
- */
+// Clase que representa un módulo de publicación de tipo video
+// Hereda de BasePostModule para reutilizar la estructura base de un post
 export class VideoPostModule extends BasePostModule {
-
-    /**
-     * Genera el HTML del contenido multimedia (un video).
-     * Incluye controles, previsualización (poster) y un mensaje alternativo
-     * en caso de que el navegador no soporte el elemento <video>.
-     * 
-     * @returns {string} - Código HTML que muestra el video dentro del post.
-     */
+    // Método que genera el contenido HTML específico para una publicación de video
     getMediaHTML() {
+        // Retorna una plantilla HTML con un elemento <video> configurado
         return `
-            <video 
-                width="100%" 
-                controls 
-                preload="metadata" 
-                poster="https://via.placeholder.com/600x400.png?text=Video+Placeholder"
-                style="border-radius: 10px;"
-            >
+            <video width="100%" controls preload="metadata" poster="https://via.placeholder.com/600x400.png?text=Video+Placeholder">
+                <!-- Fuente del video, obtenida desde los datos del post -->
                 <source src="${this.data.url}" type="video/mp4">
-                Tu navegador no soporta el elemento de video.
+                <!-- Mensaje mostrado si el navegador no soporta el elemento de video -->
+                Tu navegador no soporta el tag de video.
             </video>
         `;
     }

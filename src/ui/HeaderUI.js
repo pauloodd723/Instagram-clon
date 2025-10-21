@@ -1,70 +1,68 @@
-// Importa el NotificationManager (patrón Observer) para escuchar eventos globales de 'likes' y 'comments'
 import { notificationManager } from '../patterns/NotificationManager.js';
 
 /**
- * HeaderUI (Observador)
- * Se suscribe a los canales de notificación 'likes' y 'comments'.
- * Su función es actualizar los contadores, los registros (logs) y mostrar notificaciones flotantes.
- * Depende de la función global `showToastNotification()` (definida en main.js).
+ * HeaderUI (Observador): Se encarga de escuchar los eventos emitidos por el NotificationManager.
+ * Se suscribe a los canales 'likes' y 'comments' para actualizar los contadores del encabezado,
+ * mostrar los registros de actividad y activar notificaciones flotantes.
  */
 export const HeaderUI = (() => {
-    // Contadores de eventos
-    let _likeCount = 0;        // Número total de "me gusta" recibidos
-    let _commentCount = 0;     // Número total de comentarios recibidos
+    // Contadores internos de notificaciones
+    let _likeCount = 0;
+    let _commentCount = 0; 
     
-    // Referencias a elementos del DOM (interfaz)
-    let _likeCounterEl = null;     // Elemento del contador visual de likes
-    let _commentCounterEl = null;  // Elemento del contador visual de comentarios
-    let _likesLogEl = null;        // Lista de logs de likes (historial)
-    let _commentsLogEl = null;     // Lista de logs de comentarios (historial)
+    // Referencias a elementos del DOM
+    let _likeCounterEl = null; 
+    let _commentCounterEl = null; 
+    let _likesLogEl = null;    
+    let _commentsLogEl = null; 
 
     /**
-     * Manejador de notificaciones de "likes"
-     * Se ejecuta cada vez que una publicación recibe un nuevo "me gusta".
+     * Maneja las notificaciones del canal 'likes'.
+     * Actualiza el contador de likes, el log y muestra una notificación flotante.
      */
     const _handleLikeNotification = (data) => {
-        _likeCount++; // Incrementa el contador interno
+        _likeCount++; // Incrementa el contador de likes totales
 
-        // Actualiza el contador visual de likes en el header
+        // Actualiza el contador visual en el encabezado
         if (_likeCounterEl) {
-            _likeCounterEl.textContent = _likeCount; // Muestra el total acumulado
-            _likeCounterEl.style.display = 'block';  // Lo hace visible
+            _likeCounterEl.textContent = _likeCount; 
+            _likeCounterEl.style.display = 'block'; 
         }
         
-        // Agrega un registro al historial de likes
+        // Agrega un nuevo registro al log de likes
         if (_likesLogEl) {
             const listItem = document.createElement('li');
             listItem.innerHTML = `Publicación de **${data.author}** recibió su **${data.newLikeCount}**° Me Gusta.`;
-            _likesLogEl.prepend(listItem); // Agrega el nuevo evento al inicio del log
+            _likesLogEl.prepend(listItem); // Lo inserta al inicio de la lista
         }
         
-        // Muestra una notificación flotante en pantalla (si está disponible)
+        // Muestra una notificación flotante (si existe la función global)
         if (typeof window.showToastNotification === 'function') {
             window.showToastNotification(`❤️ Me gusta en el post de ${data.author}.`);
         }
     };
 
     /**
-     * Manejador de notificaciones de "comments"
-     * Se ejecuta cuando alguien comenta en una publicación.
+     * Maneja las notificaciones del canal 'comments'.
+     * Actualiza el contador de comentarios, el log y muestra una notificación flotante.
      */
     const _handleCommentNotification = (data) => {
-        _commentCount++; // Incrementa el contador interno de comentarios
+        _commentCount++; // Incrementa el contador de comentarios totales
 
-        // Actualiza el contador visual de comentarios
+        // Actualiza el contador visual en el encabezado
         if (_commentCounterEl) {
             _commentCounterEl.textContent = _commentCount;
             _commentCounterEl.style.display = 'block';
         }
 
-        // Agrega un registro al historial de comentarios
+        // Agrega un nuevo registro al log de comentarios
         if (_commentsLogEl) {
             const listItem = document.createElement('li');
             listItem.innerHTML = `**${data.comment.user}** comentó en el post de **${data.author}**: "${data.comment.text}"`;
-            _commentsLogEl.prepend(listItem);
+            _commentsLogEl.prepend(listItem); // Lo inserta al inicio de la lista
         }
         
-        // Muestra una notificación flotante si la función existe
+        // Muestra una notificación flotante (si existe la función global)
         if (typeof window.showToastNotification === 'function') {
             window.showToastNotification(`💬 ${data.comment.user} comentó en el post de ${data.author}.`);
         }
@@ -73,22 +71,21 @@ export const HeaderUI = (() => {
     return {
         /**
          * Inicializa el observador HeaderUI:
-         * - Obtiene los elementos del DOM.
+         * - Obtiene referencias a los elementos del DOM.
          * - Se suscribe a los canales 'likes' y 'comments'.
-         * - Oculta los contadores hasta que se reciba alguna notificación.
+         * - Oculta los contadores al inicio.
          */
         init: () => {
-            // Captura los elementos del DOM
             _likeCounterEl = document.getElementById('like-notification-counter');
             _commentCounterEl = document.getElementById('comment-notification-counter'); 
             _likesLogEl = document.getElementById('likes-log');
             _commentsLogEl = document.getElementById('comments-log');
 
-            // Suscribirse a los eventos globales del NotificationManager
+            // Suscribirse a los canales del NotificationManager
             notificationManager.subscribe('likes', _handleLikeNotification);
             notificationManager.subscribe('comments', _handleCommentNotification); 
 
-            // Ocultar contadores al inicio
+            // Ocultar contadores inicialmente hasta que haya actividad
             if (_likeCounterEl) _likeCounterEl.style.display = 'none';
             if (_commentCounterEl) _commentCounterEl.style.display = 'none';
         }

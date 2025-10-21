@@ -1,26 +1,12 @@
-// Importa la clase base que contiene la estructura y métodos comunes para todos los tipos de publicaciones
+// Importa la clase base que contiene la estructura y funcionalidades comunes para todos los tipos de publicaciones
 import { BasePostModule } from './BasePostModule.js';
 
-/**
- * Clase que representa un módulo de publicación de imagen.
- * Extiende la funcionalidad base de `BasePostModule` y añade el soporte para mostrar una sola imagen.
- */
+// Clase que representa un módulo de publicación de tipo imagen
+// Hereda de BasePostModule para aprovechar la lógica base de las publicaciones
 export class ImagePostModule extends BasePostModule {
-
-    /**
-     * Genera el HTML del contenido multimedia (una imagen).
-     * Se usa la URL y el texto alternativo almacenados en los datos de la publicación.
-     * 
-     * @returns {string} - Código HTML con la imagen renderizada.
-     */
+    // Método que genera el contenido HTML específico para una publicación de imagen
     getMediaHTML() {
-        return `
-            <img 
-                src="${this.data.url}" 
-                alt="${this.data.caption}" 
-                loading="lazy"
-                style="width: 100%; border-radius: 10px;"
-            >
-        `;
+        // Retorna una etiqueta <img> con la URL y el texto alternativo definidos en los datos del post
+        return `<img src="${this.data.url}" alt="${this.data.caption}">`;
     }
 }
